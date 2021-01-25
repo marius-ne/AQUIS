@@ -130,7 +130,7 @@ def byte_change(i2c,address,register,value,*args):
         raise ValueError('Please provide all / only those bits that will change with given value!\ne.g. value 5 in bit position 3 (00101000) requires bits 3,4,5 - indexed 0-7 from right to left.')
         
     for bit in args:
-        if bit != min(args) and bit - 1 not in args:
+        if value > 0 and bit != min(args) and bit - 1 not in args:
             print(f'value: {value}, args: {args}, register: {register}')
             raise ValueError('Please provide only the changing bits in consecutive order.\nUndefined behaviour will occur otherwise!')
       
