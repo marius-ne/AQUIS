@@ -104,7 +104,7 @@ def byte_change(i2c,address,register,value,*args):
     :param address: WHO_AM_I address of slave
     :param register: register to be changed
     :param value: number to indicate the new value. e.g. changing 000 to 110 requires value 6. assumes no trailing zeros, position in byte determined by :param *args:
-    :param *args: bits that will be affected by the change. e.g. changing 000100 to 001010 requires bit 3,2,1 (from left to right, starting at 0)
+    :param *args: bits that will be affected by the change. e.g. changing 000100 to 001010 requires bits 3,2,1 (indexed from right to left, starting at 0)
     
     :type i2c: busio.I2C object
     :type address: int
