@@ -2,7 +2,15 @@ import struct
 
 def get_bits(number,*args):
     """
-    returns state of bit
+    method to get bit-states of binary representation of a number
+    
+    :param number: number to read bits from
+    :param *args: desired bit positions, from right to left, starting at 0
+    :type number: int
+    :type *args: int
+    
+    :returns: list of the bit-states in order of the positions provided
+    :rtype: list if len(args) > 1 else int
     """
     res = []
     for pos in args:
@@ -14,10 +22,15 @@ def get_bits(number,*args):
 
 def set_bits(number,dct):
     """
-    needs dict with bit positions and desired values
+    method to return number with bits in binary representation changed
 
-    error catching through checking with get_bits() that
-    query makes sense, else gets ignored
+    :param number: number to set bits to
+    :param dct: bits as keys with desired states as values
+    :type number: int
+    :type dct: dict
+    
+    :returns: number with bits changed
+    :rtype: int
     """
     for pos,val in dct.items():
         if val and get_bits(number,pos) == 0:
@@ -27,25 +40,52 @@ def set_bits(number,dct):
     return number
 
 def byte_write(i2c,address,register,subject):
+    """
+    method to write new byte to i2c register
+    
+    :param i2c: i2c object from busio.I2C
+    :param address: WHO_AM_I address of slave
+    :param register: address of register to be written to
+    :param subject: number representation (endian-ness depends on slave) of new byte to be written
+    
+    :type i2c: busio.I2C object
+    :type address: int
+    :type register: int
+    :type subject: int
+    
+    :returns: nothing
+    :rtype: None
+    """
     initial = bytearray(1)
     i2c.writeto(address,bytes([register]))
     i2c.readfrom_into(address,initial)
      
-
     i2c.writeto(address,bytes([register,subject]))
-     
 
     changed = bytearray(1)
     i2c.writeto(address,bytes([register]))
     i2c.readfrom_into(address,changed)
-     
 
     print(f'{hex(register)} prev: {initial[0]:08b}\n{hex(register)} now:  {changed[0]:08b}\n')
+    
+    return None
 
-def byte_read(i2c,address,*args,len_array):
+def byte_read(i2c,address,*args,len_array=1):
     """
-    len_array is the size of the expected return from the register
-    if multiple registers are provided each of them reads up to len_array
+    method to read current state of the given registers
+    
+    :param i2c: i2c object from busio.I2C
+    :param address: WHO_AM_I address of slave
+    :param *args: register to be read
+    :param len_array: keyword argument to determine length of reading from each register, defaults to 1
+    
+    :type i2c: busio.I2C object
+    :type address: int
+    :type *args: int
+    :type len_array: int
+    
+    :returns: bytearray with length: len(args) * len_array
+    :rtype: bytearray object
     """
     state = bytearray(len_array * len(args)) #len_array for each register if multiple registers
     for ix,reg in enumerate(args):
@@ -57,9 +97,26 @@ def byte_read(i2c,address,*args,len_array):
     return state
     
 def byte_change(i2c,address,register,value,*args):
+    """
+    method to read register and only change bits provided, leaving the rest as is
+    
+    :param i2c: i2c object from busio.I2C
+    :param address: WHO_AM_I address of slave
+    :param register: register to be changed
+    :param value: number to indicate the new value. e.g. changing 000 to 110 requires value 6. assumes no trailing zeros, position in byte determined by :param *args:
+    :param *args: bits that will be affected by the change. e.g. changing 000100 to 001010 requires bit 3,2,1 (from left to right, starting at 0)
+    
+    :type i2c: busio.I2C object
+    :type address: int
+    :type register: int
+    :type value: int
+    :type *args: int
+    
+    :returns: nothing
+    :rtype: None
+    """
     original_byte = byte_read(i2c,address,register,len_array=1)
     original = struct.unpack('>B',original_byte)[0]
-     
     
     base_byte = value << min(args)
     if value > 0:
@@ -76,3 +133,5 @@ def byte_change(i2c,address,register,value,*args):
             print(base_byte,new_byte,value,args)
             raise ValueError('conversion did not work')
     byte_write(i2c,address,register,new_byte)
+    
+    return None

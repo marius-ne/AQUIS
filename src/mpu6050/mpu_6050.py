@@ -1,6 +1,7 @@
 from i2c_api import get_bits, set_bits, byte_read, byte_write, byte_change
 import struct
 
+#see register-map under https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf
 MPU_ADDRESS = 0x68
 WHO_AM_I =  0x75
 PWR_MGMNT = 0x6b
@@ -29,29 +30,43 @@ GYRO_CFG = 0x1b
 
 
 class MPU(object):
+    """
+    driver class for MPU-6050 gyroscope & accelerometer
+    
+    returns gyro and accelerometer measurements with mpu.gyro and mpu.accel respectively
+    
+    initialize with busio.I2C object
+    """
 
     def __init__(self,i2c):
         self.i2c = i2c
 
     @property
     def temperature(self):
+        """
+        returns current temperature of MPU-6050
+        """
         temp_bytes = byte_read(self.i2c,MPU_ADDRESS,TEMP_H,TEMP_L,len_array=1) #read temperature registers
-        temp = struct.unpack('>h',temp_bytes)[0]                      #first item because unpack returns tuple
+        temp = struct.unpack('>h',temp_bytes)[0]                               #first item because unpack returns tuple
 
-        temp = (temp / 340) +36.53
+        temp = (temp / 340) +36.53                                             #conversion according to sect. 4.18 register-map
         return temp
 
     @property
     def sleep(self):
-        sleep_byte = byte_read(self.i2c,MPU_ADDRESS,PWR_MGMNT,len_array=1)
+        """
+        returns current sleep state of MPU-6050
+        """
+        sleep_byte = byte_read(self.i2c,MPU_ADDRESS,PWR_MGMNT,len_array=1)     #read sleep register
         sleep = struct.unpack('>B',sleep_byte)[0]
 
-        self.sleep_state = get_bits(sleep,6)
+        self.sleep_state = get_bits(sleep,6)                                   #sleep state in bit position 6 of register
         return self.sleep_state
 
     @sleep.setter
     def sleep(self,value):
         """
+        input value of 0 wakes up MPU-6050
         value of 1 puts mpu to sleep
         """
         byte_change(self.i2c,MPU_ADDRESS,PWR_MGMNT,value,6)
@@ -60,6 +75,11 @@ class MPU(object):
 
     @property
     def accel_range(self):
+        """
+        returns current range / sensitivity of accelerometer
+        
+        see sect. 4.5 & 4.17 of register-map
+        """
         cfg_byte = byte_read(self.i2c,MPU_ADDRESS,ACCEL_CFG,len_array=1)
         cfg = struct.unpack('>B',cfg_byte)[0]
 
@@ -70,7 +90,9 @@ class MPU(object):
     @accel_range.setter
     def accel_range(self,range_int):
         """
-        takes one of four possible values, see sect. 4.5 in datasheet
+        sets new range / sensitivity values
+        takes AFS_SEL value
+        see sect. 4.5 & 4.17 register-map
         """
         byte_change(self.i2c,MPU_ADDRESS,ACCEL_CFG,range_int,3,4)
 
@@ -78,6 +100,11 @@ class MPU(object):
 
     @property
     def accel(self):
+        """
+        returns current acceleration measurement of the form:
+        
+        (X, Y, Z) in m/s^2
+        """
         accel_bytes_x = byte_read(self.i2c,MPU_ADDRESS,ACCELX_H,ACCELX_L,len_array=1)
         accel_bytes_y = byte_read(self.i2c,MPU_ADDRESS,ACCELY_H,ACCELY_L,len_array=1)
         accel_bytes_z = byte_read(self.i2c,MPU_ADDRESS,ACCELZ_H,ACCELZ_L,len_array=1)
@@ -98,6 +125,11 @@ class MPU(object):
 
     @property
     def gyro_range(self):
+        """
+        returns current range / sensitivity of gyro
+        
+        see sect. 4.4 & 4.19 of register-map
+        """
         cfg_byte = byte_read(self.i2c,MPU_ADDRESS,GYRO_CFG,len_array=1)
         cfg = struct.unpack('>B',cfg_byte)[0]
 
@@ -108,7 +140,9 @@ class MPU(object):
     @accel_range.setter
     def gyro_range(self,range_int):
         """
-        takes one of four possible values, see sect. 4.5 in datasheet
+        sets new range / sensitivity values
+        takes FS_SEL value
+        see sect. 4.4 & 4.19 register-map
         """
         byte_change(self.i2c,MPU_ADDRESS,GYRO_CFG,range_int,3,4)
 
@@ -116,7 +150,11 @@ class MPU(object):
 
     @property
     def gyro(self):
-   
+        """
+        returns current gyro measurement of the form:
+        
+        (X, Y, Z) in °/s
+        """
         gyro_bytes_x = byte_read(self.i2c,MPU_ADDRESS,GYROX_H,GYROX_L,len_array=1)
         gyro_bytes_y = byte_read(self.i2c,MPU_ADDRESS,GYROY_H,GYROY_L,len_array=1)
         gyro_bytes_z = byte_read(self.i2c,MPU_ADDRESS,GYROZ_H,GYROZ_L,len_array=1)
@@ -137,6 +175,11 @@ class MPU(object):
 
     @property
     def dlpf(self):
+        """
+        returns current state of the difital low pass filter
+        
+        see sect. 4.3 of register-map
+        """
         cfg_byte = byte_read(self.i2c,MPU_ADDRESS,GEN_CFG,len_array=1)
         cfg = struct.unpack('>B',cfg_byte)[0]
 
@@ -146,6 +189,11 @@ class MPU(object):
 
     @dlpf.setter
     def dlpf(self,value):
+        """
+        sets new state of the difital low pass filter
+        takes DLPF_CFG value
+        see sect. 4.3 of register-map
+        """
         byte_change(self.i2c,MPU_ADDRESS,GEN_CFG,value,0,1,2)
 
         self.dlpf_state = value

@@ -1,12 +1,11 @@
-# Write your code here :-)
 import board
 import time
 import busio
 import struct
-from mpu_6050 import MPU
+from mpu_6050 import MPU #driver for MPU-6050 gyro & accelerometer
 
 
-
+#initialize i2c bus
 i2c = busio.I2C(board.SCL, board.SDA,frequency=400000)
 while not busio.I2C.try_lock(i2c):
     pass
@@ -27,6 +26,7 @@ if __name__ == '__main__':
         time.sleep(0.1)
 
         while True:
+            #plot gyro readout of mpu
             print(mpu.gyro)
 
             time.sleep(0.1)
