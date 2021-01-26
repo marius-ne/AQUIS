@@ -2,8 +2,12 @@ import board
 import time
 import busio
 import struct
+from rtc import RTC
 from mpu_6050 import MPU #driver for MPU-6050 gyro & accelerometer
 
+#time in 01-01-2000 epoch, starts at power-on
+clock = RTC()
+now = clock.datetime
 
 #initialize i2c bus
 i2c = busio.I2C(board.SCL, board.SDA,frequency=400000)
