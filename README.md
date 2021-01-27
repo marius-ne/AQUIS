@@ -16,4 +16,4 @@ Put code.py into root folder.
 
 > Non intrusive Exception handling that ensures stable runtime
 
-> Globally updated log to downlink, Exceptions have to stdout to log
+> Globally updated log to downlink, log == stdout?
