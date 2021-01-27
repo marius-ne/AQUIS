@@ -15,3 +15,5 @@ Put code.py into root folder.
 > State Machine & Power modes
 
 > Non intrusive Exception handling that ensures stable runtime
+
+> Globally updated log to downlink
