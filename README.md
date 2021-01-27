@@ -8,3 +8,10 @@ Development repository for our PocketQube-project.
 Put contents of lib-folder into lib-folder of E:\CIRCUITPYTHON drive on your board. 
 Put code.py into root folder.
 
+## TODO
+
+> API for analogueIn devices
+
+> State Machine & Power modes
+
+> Exception handling
