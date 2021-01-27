@@ -14,4 +14,4 @@ Put code.py into root folder.
 
 > State Machine & Power modes
 
-> Exception handling
+> Non intrusive Exception handling that ensures stable runtime
