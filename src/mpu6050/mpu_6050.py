@@ -137,7 +137,7 @@ class MPU(object):
         self.gyro_range_state = range_int
         return range_int
 
-    @accel_range.setter
+    @gyro_range.setter
     def gyro_range(self,range_int):
         """
         sets new range / sensitivity values
