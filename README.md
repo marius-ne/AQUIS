@@ -10,9 +10,13 @@ Put code.py into root folder.
 
 ## TODO
 
-> API for analogueIn devices
+> Encoding for Comms
 
-> State Machine & Power modes
+> Command Parsing
+
+> ~~API for analogueIn devices~~
+
+> ~~State Machine & Power modes~~
 
 > Non intrusive Exception handling that ensures stable runtime
 
