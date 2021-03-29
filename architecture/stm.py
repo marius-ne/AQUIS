@@ -1,25 +1,34 @@
 import sensors
 import states
 import random
+from log import log
 
-TUMBLE_THRESH = random.choice([i for i in range(2**16)])
-VOLT_THRESH = random.choice([i for i in range(2**16)])
 
 
 class StateMachine(object):
 
     def __init__(self):
-        pass
+        self.TUMBLE_THRESH = (2**16) / 1.5
+        self.VOLT_THRESH = 200
+        self.SOLAR_THRESH = (2**16) / 2
+        self.READINGS = {}
 
     def find(self):
         readings = sensors.read_all()
+        self.READINGS = readings
+        
         gyro = readings['mpu_6050'][0]
-        volt = readings['stc_3100'][1]
+        volt = readings['stc_3100']
+        photo = readings['photo'][2]
         comms = readings['antenna']
-        if gyro > TUMBLE_THRESH:
-            return states.STATES['Tumble']
-        elif volt < VOLT_THRESH:
+        if volt == 0:
+            return states.STATES['Empty']
+        elif volt < self.VOLT_THRESH:
             return states.STATES['LowPower']
+        elif gyro > self.TUMBLE_THRESH:
+            return states.STATES['Tumble']
+        elif photo > self.SOLAR_THRESH:
+            return states.STATES['SolarMax']
         elif comms:
             return states.STATES['Comms']
         else:
@@ -27,8 +36,8 @@ class StateMachine(object):
 
     def next(self, state):
         self.current = state.__name__
-        try:
-            state.execute()
-        except Exception as e:
-            return False, e
-        return True, 0
+        string = f'ENTERING {state.__name__}.'
+        for k,v in self.READINGS.items():
+            string += f'{k}: {v}'
+        log(self.READINGS)
+        state().execute()

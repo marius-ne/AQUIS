@@ -16,7 +16,12 @@ if __name__ == "__main__":
     setup()
 
     while True:
-        next = stm.find()
-        print(next)
-        stm.next(next)
-        time.sleep(0.1)
+        try:
+            next = stm.find()
+            print(next)
+            stm.next(next)
+            if stm.current == 'Empty':
+                print('NO POWER')
+                break
+        except Exception as e:
+            raise(e)

@@ -1,5 +1,6 @@
 import comms
 import sensors
+from power import PowerSys
 
 class State(object):
 
@@ -12,9 +13,7 @@ class Comms(State):
 
     def execute(self):
         """execute state-specific functions"""
-        readings = sensors.read_all()
-        data = comms.encode(readings)
-        comms.transmit(data)
+        comms.transmit()
 
 class Idle(State):
 
@@ -28,10 +27,22 @@ class LowPower(State):
         """execute state-specific functions"""
         pass
 
+class Empty(State):
+
+    def execute(self):
+        """execute state-specific functions"""
+        pass
+
 class Tumble(State):
 
     def execute(self):
         """execute state-specific functions"""
         pass
 
-STATES = {state.__name__ : state for state in [Comms, Idle, LowPower, Tumble]}
+class SolarMax(State):
+
+    def execute(self):
+        """execute state-specific functions"""
+        PowerSys.charge()
+
+STATES = {state.__name__ : state for state in [Comms, Idle, LowPower, Tumble, SolarMax, Empty]}

@@ -1,13 +1,16 @@
 from random import choice
-from numpy import arange
+from power import PowerSys
 
-VOLTAGE_MAX = 4.2                                       #voltage on mcu, determines adc max value
-VOLTAGE_NOW = choice([f for f in arange(1.0,4.0,0.1)])  #voltage on sensor
+
 
 class Pin(object):
 
     def __init__(self, pin):
-        self.value = choice([reading for reading in range(0,2**16)])
+        self.pin = pin
+
+    @property
+    def value(self):
+        return choice([reading for reading in range(0,2**15)])
 
 class Analogue_Device(object):
     """
@@ -23,6 +26,7 @@ class Analogue_Device(object):
     def __init__(self,pin):
         self.pin = pin
         self.convert_func = lambda val: val             #pin value needs to be converted via method from datasheet
+        self.pws = PowerSys()
 
     @property
     def conversion(self):
@@ -64,10 +68,11 @@ class Analogue_Device(object):
         :returns: reading
         :rtype: float
         """
+        volt = self.pws.voltage
         #digital reading needs to be set because volt. on sensor != volt. on mcu
         reading = (sum(self.pin.value for i in range(8))) / 8 #filtering reading
 
-        scaled_reading = self.scale((0,VOLTAGE_NOW),(0,VOLTAGE_MAX),reading)
+        scaled_reading = self.scale((0,volt),(0,PowerSys.VOLTAGE_MAX),reading)
         true_val = self.convert_func(scaled_reading) 
         #print(f'MAX. VOLT: {VOLTAGE_MAX}, CURRENT VOLT.: {VOLTAGE_NOW:.2f}')   
         #print(f'READING: {self.pin.value}, SCALED READING: {scaled_reading:.2f}, CONVERTED: {true_val:.2f}') 
