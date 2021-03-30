@@ -1,4 +1,4 @@
-## STA's PocketQube
+# STA's PocketQube
 ### Python repository
 
 Development repository for our PocketQube-project.
@@ -22,7 +22,11 @@ style Node2 stroke-width:4px
 style Node3 color:#000
 
 Node10(States & Thresholds) -.-> Node5
+Node11(External commands) -.-> Node6
+
 style Node10 stroke-width:4px, fill:#ffd
+style Node11 stroke-width:4px, fill:#ffd
+
 Node6[Execute State functions] --> Node3
 Node3 --> Node4[Read Sensors]
 
