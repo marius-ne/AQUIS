@@ -20,6 +20,7 @@ if __name__ == "__main__":
             next = stm.find()
             print(next)
             stm.next(next)
+            time.sleep(1)
             if stm.current == 'Empty':
                 print('NO POWER')
                 break

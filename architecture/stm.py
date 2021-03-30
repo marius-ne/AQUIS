@@ -22,16 +22,22 @@ class StateMachine(object):
         photo = readings['photo'][2]
         comms = readings['antenna']
         if volt == 0:
+            print('Voltage reached 0.')
             return states.STATES['Empty']
         elif volt < self.VOLT_THRESH:
+            print(f'Voltage fell below {self.VOLT_THRESH}, entering LowPower.')
             return states.STATES['LowPower']
         elif gyro > self.TUMBLE_THRESH:
+            print(f'Gyro rose above {self.TUMBLE_THRESH}, entering Tumble.')
             return states.STATES['Tumble']
         elif photo > self.SOLAR_THRESH:
+            print(f'Light-level rose above {self.SOLAR_THRESH}, entering LowPower.')
             return states.STATES['SolarMax']
         elif comms:
+            print(f'Antenna recognized signal, entering comms.')
             return states.STATES['Comms']
         else:
+            print('No thresholds reached, staying idle.')
             return states.STATES['Idle']
 
     def next(self, state):
