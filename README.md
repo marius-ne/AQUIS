@@ -37,8 +37,20 @@ subgraph "State Machine"
   style Node4 fill:#bbf
   style Node6 fill:#bbf
   Node5 --> Node6
-  
+
 end
+
+subgraph "Modules and sensors"
+  
+  Node20[STC3100] --> Node30{Main Loop}
+  Node100[MPU6050] --> Node30
+  Node40[RFM95W] --> Node30
+  style Node20 fill:#bbf
+  style Node100 fill:#bbf
+  style Node40 fill:#bbf
+
+end
+  
 
 ```
 ## States
