@@ -31,7 +31,7 @@ class StateMachine(object):
             print(f'Gyro rose above {self.TUMBLE_THRESH}, entering Tumble.')
             return states.STATES['Tumble']
         elif photo > self.SOLAR_THRESH:
-            print(f'Light-level rose above {self.SOLAR_THRESH}, entering LowPower.')
+            print(f'Light-level rose above {self.SOLAR_THRESH}, entering SolarMax.')
             return states.STATES['SolarMax']
         elif comms:
             print(f'Antenna recognized signal, entering comms.')

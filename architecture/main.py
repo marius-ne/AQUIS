@@ -1,6 +1,6 @@
 from stm import StateMachine
 import states
-import time
+import times
 
 stm = StateMachine()
 
@@ -18,11 +18,11 @@ if __name__ == "__main__":
     while True:
         try:
             next = stm.find()
-            print(next)
             stm.next(next)
-            time.sleep(1)
+            var = rfm.receive(5)
             if stm.current == 'Empty':
                 print('NO POWER')
                 break
         except Exception as e:
             raise(e)
+
