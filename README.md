@@ -1,4 +1,4 @@
-## STA's PocketQube
+# STA's PocketQube
 ### Python repository
 
 Development repository for our PocketQube-project.
@@ -22,7 +22,11 @@ style Node2 stroke-width:4px
 style Node3 color:#000
 
 Node10(States & Thresholds) -.-> Node5
+Node11(External commands) -.-> Node6
+
 style Node10 stroke-width:4px, fill:#ffd
+style Node11 stroke-width:4px, fill:#ffd
+
 Node6[Execute State functions] --> Node3
 Node3 --> Node4[Read Sensors]
 
@@ -33,8 +37,20 @@ subgraph "State Machine"
   style Node4 fill:#bbf
   style Node6 fill:#bbf
   Node5 --> Node6
-  
+
 end
+
+subgraph "Modules and sensors"
+  
+  Node20[STC3100] --> Node30{Main Loop}
+  Node100[MPU6050] --> Node30
+  Node40[RFM95W] --> Node30
+  style Node20 fill:#bbf
+  style Node100 fill:#bbf
+  style Node40 fill:#bbf
+
+end
+  
 
 ```
 ## States
