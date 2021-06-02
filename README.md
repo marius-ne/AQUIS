@@ -104,3 +104,5 @@ Antenna having received signal.
 > Non intrusive Exception handling that ensures stable runtime
 
 > Globally updated log to downlink, log == stdout?
+
+> Testing of libraries for external modules
