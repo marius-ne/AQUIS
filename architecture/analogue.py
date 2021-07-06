@@ -1,18 +1,6 @@
-from random import choice
-from power import PowerSys
+from analogio import AnalogIn
 
-
-
-class Pin(object):
-
-    def __init__(self, pin):
-        self.pin = pin
-
-    @property
-    def value(self):
-        return choice([reading for reading in range(0,2**15)])
-
-class Analogue_Device(object):
+class AnalogueDevice(object):
     """
     wrapper for easy reading of device on an adc-pin
 
@@ -24,9 +12,8 @@ class Analogue_Device(object):
     should be specified in datasheet of device
     """
     def __init__(self,pin):
-        self.pin = pin
-        self.convert_func = lambda val: val             #pin value needs to be converted via method from datasheet
-        self.pws = PowerSys()
+        self.pin = AnalogIn(pin)
+        self.convertFunc = lambda val: val             #pin value needs to be converted via method from datasheet
 
     @property
     def conversion(self):
@@ -36,7 +23,7 @@ class Analogue_Device(object):
         :returns: conversion function
         :rtype: function
         """
-        return self.convert_func
+        return self.convertFunc
 
     @conversion.setter
     def conversion(self,func):
@@ -58,7 +45,7 @@ class Analogue_Device(object):
             print('Conversion function must return int or float, keeping previous / default!')
             return None
 
-        self.convert_func = func
+        self.convertFunc = func
 
     @property
     def value(self):
@@ -68,17 +55,16 @@ class Analogue_Device(object):
         :returns: reading
         :rtype: float
         """
-        volt = self.pws.voltage
         #digital reading needs to be set because volt. on sensor != volt. on mcu
         reading = (sum(self.pin.value for i in range(8))) / 8 #filtering reading
 
-        scaled_reading = self.scale((0,volt),(0,PowerSys.VOLTAGE_MAX),reading)
-        true_val = self.convert_func(scaled_reading) 
+        scaled_reading = self.scale((0,5),(0,5),reading)
+        true_val = self.convertFunc(scaled_reading) 
         #print(f'MAX. VOLT: {VOLTAGE_MAX}, CURRENT VOLT.: {VOLTAGE_NOW:.2f}')   
         #print(f'READING: {self.pin.value}, SCALED READING: {scaled_reading:.2f}, CONVERTED: {true_val:.2f}') 
         return true_val
 
-    def scale(self,val_range,target_range,reading):
+    def scale(self,valRange,targetRange,reading):
         """
         scales the incoming voltage in relation to the mcu voltage
 
@@ -94,24 +80,14 @@ class Analogue_Device(object):
         :rtype: float
         """
         try:
-            assert type(val_range)==tuple and type(target_range)==tuple
+            assert type(valRange)==tuple and type(targetRange)==tuple
         except AssertionError:
             print('Ranges should be in tuple format, returning 0!')
             return 0
 
-        mult = (max(target_range)-min(target_range)) / (max(val_range)-min(val_range))
+        mult = (max(targetRange)-min(targetRange)) / (max(valRange)-min(valRange))
         try:
-            return mult * (reading + (min(target_range)-min(val_range)))
+            return mult * (reading + (min(targetRange)-min(valRange)))
         except TypeError:
             print('reading argument must be able to perform arithmetically, returning 0!')
             return 0
-
-
-if __name__ == '__main__':
-    #this would be AnalogIn(board.A#)   
-    pin = Pin()
-
-    obj = Analogue_Device(pin)
-    obj.conversion = lambda x : x / 2
-
-    print(obj.value)
