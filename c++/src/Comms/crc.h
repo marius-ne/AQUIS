@@ -1,0 +1,4 @@
+
+
+const int POLYNOMIAL = 0b10001000000100001;
+const int POLYNOM_LEN = 16;
