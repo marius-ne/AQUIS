@@ -12,47 +12,53 @@ Put code.py into root folder.
 
 ```mermaid
 
-flowchart LR
+flowchart TD
 
-Node1[Define Thresholds] --> Node2[Enter initial state]
-Node2 --> Node3{Main Loop}
 
-style Node1 stroke-width:4px
-style Node2 stroke-width:4px
-style Node3 color:#000
-
-Node10(States & Thresholds) -.-> Node5
-Node11(External commands) -.-> Node6
-
-style Node10 stroke-width:4px, fill:#ffd
-style Node11 stroke-width:4px, fill:#ffd
-
-Node6[Execute State functions] --> Node3
-Node3 --> Node4[Read Sensors]
-
-subgraph "State Machine"
-  
-  Node4 --> Node5[Decide next State] 
-  style Node5 fill:#bbf
-  style Node4 fill:#bbf
-  style Node6 fill:#bbf
-  Node5 --> Node6
-
-end
+style Node1 fill:#ede26b,stroke-width:2px,stroke:#000000
 
 subgraph "Modules and sensors"
   
-  Node20[STC3100] --> Node30{Main Loop}
-  Node100[MPU6050] --> Node30
-  Node40[RFM95W] --> Node30
+  Node20[LTC2934] --> Node1{OBC}
+  Node100[IMU2968] --> Node1
+  Node40[DRF1268T] --> Node1
   style Node20 fill:#bbf
   style Node100 fill:#bbf
   style Node40 fill:#bbf
 
 end
+```
+```mermaid
+graph LR
+    C{Main Loop} --> G
+    subgraph State Machine
+    G{{Read sensors}} -->|Look at thresholds| I{{Choose next state}}
+    end
+
+
+
+    I -->|Transmitting| K{{Transmit data}}
+    subgraph Communications
+    K --> M((Idle))
+    M -->|Signal received| N{{Execute commands}}
+    end
+    M -->|Timeout| L
+    N --> L
+    I -->|Not transmitting| L[Next loop]
+
+
+    style G fill:#a2e0cd,stroke-width:2px,stroke:#000000
+    style I fill:#a2e0cd,stroke-width:2px,stroke:#000000
+    style C fill:#ede26b,stroke-width:2px,stroke:#000000
+    style L fill:#ede26b,stroke-width:2px,stroke:#000000
+    style K fill:#bbf,stroke-width:2px,stroke:#000000
+    style N fill:#bbf,stroke-width:2px,stroke:#000000
+    style M stroke-width:2px,stroke:#000000
+    
+```
   
 
-```
+
 ## States
 
 #### Idle
