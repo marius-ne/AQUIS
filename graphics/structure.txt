@@ -1,0 +1,27 @@
+graph TD
+    C{Main Loop} --> G
+    subgraph State Machine
+    G{{Read sensors}} -->|Look at thresholds| I{{Choose next state}}
+    end
+
+
+
+    I -->|Transmitting| K{{Transmit data}}
+    subgraph Communications
+    K --> M((Idle))
+    M -->|Signal received| N{{Execute commands}}
+    end
+    M -->|Timeout| L
+    N --> L
+    I -->|Not transmitting| L[Next loop]
+
+
+    style G fill:#a2e0cd,stroke-width:2px,stroke:#000000
+    style I fill:#a2e0cd,stroke-width:2px,stroke:#000000
+    style C fill:#ede26b,stroke-width:2px,stroke:#000000
+    style L fill:#ede26b,stroke-width:2px,stroke:#000000
+    style K fill:#bbf,stroke-width:2px,stroke:#000000
+    style N fill:#bbf,stroke-width:2px,stroke:#000000
+    style M stroke-width:2px,stroke:#000000
+    
+    

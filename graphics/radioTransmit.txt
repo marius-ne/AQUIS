@@ -1,0 +1,16 @@
+graph TD
+    A[Sleep / STDBY] -->|NSS Falling Edge| C{Mode?}
+    C --> D{{SetPaConfig}} 
+    D -->|High or Low Power?| E{{SetTxParams}}
+    E --> F{{SetTx}}
+    F --> G((TX))
+    G -.-> A
+
+    C --> H{{SetRx}}
+    H --> I((RX))
+    I -.-> A
+
+    style A stroke-width:2px,stroke:#000000
+    style G fill:#a2e0cd,stroke-width:2px,stroke:#000000
+    style I fill:#a2e0cd,stroke-width:2px,stroke:#000000
+    style C fill:#ede26b,stroke-width:2px,stroke:#000000
