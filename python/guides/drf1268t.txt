@@ -1,0 +1,19 @@
+
+
+Preamble:
+
+The preamble should be shorter than the sync word (p.42). It should be at least 16 bits (p.43).
+The preamble detector length is recommended to be 8 or 16 bits (p.43).
+It seems like sending a longer preamble than the detector length is not a problem.
+
+Sync word:
+
+If a sync word is expected by the appropiate setting in SetPacketParam() then the
+received sync word has to match up with the one stored in the registers.
+It can be 1 to 8 bytes long.
+
+Packet length:
+
+There are two settings - fixed and variable. If fixed is chosen, the packet length
+has to be set by the master with SetPacketParam(). If instead variable is chosen,
+the packet length will be a byte automatically transmitted between sync word and data (p.44).

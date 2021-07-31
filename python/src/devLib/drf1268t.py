@@ -10,6 +10,7 @@ RNG0 = 0x0819
 RNG1 = 0x081A
 RNG2 = 0x081B
 RNG3 = 0x081C
+SYNC_L = 0x06C0
 
 # commands (opcode)
 NOP = 0x00
@@ -35,18 +36,19 @@ class DRF1268T():
         self.busyPin = busyPin
 
     #page 94
-    def getStatus(self) -> int:
+    def getStatus(self) -> tuple:
         """
         Sends the getStatus command.
         
         Returns
         -----
-        status : 2 STDBY_RC, 3 STDBY_XOSC, 4 FS, 5 RX, 6 TX
+        chipMode : 2 STDBY_RC, 3 STDBY_XOSC, 4 FS, 5 RX, 6 TX
+        commandStatus : 2 Data available, 3 Cmd timeout, 4 Cmd invalid, 5 Cmd error, 6 TX success
         """
         byte = spilib.transceive(self.spi,self.csPin,self.busyPin,GET_STATUS,1)
         raw = struct.unpack(">B",byte)[0]
 
-        return raw & 0x70 # isolate bits 6:4
+        return (raw & 0x70, raw & 0x0E) # isolate bits 6:4 and 3:1
 
     # page 65
     def setSleep(self,value: int):
@@ -83,15 +85,22 @@ class DRF1268T():
         Parameters
         -----
         value : 0 RX, 1 TX
-        timeout : timeout (seconds). between 0 (off) and 262  for continous (only RX)
+        timeout : timeout (seconds). between 0 (off) and 262 for continous (only RX)
         """
         self.setStandby(0)
-        timeoutBytes = int(timeout / (15.625 * (10**-6)))
+        
+        if timeout >= 262:
+            bytes = [0xFF,0xFF,0xFF]
+        else:
+            timeoutLSB = int(timeout / (15.625e-06))
+            bytes = []
+            for i in range(3):                          
+                bytes.append((timeoutLSB >> (8 * (2-i))) & 0xFF) # shifting along, keeping last 8 bits
+
         if value == 0 :
-            spilib.send(self.spi,self.csPin,self.busyPin,SET_RX,[])
+            spilib.send(self.spi,self.csPin,self.busyPin,SET_RX,bytes)
         elif value == 1:
-            # first setting PaConfig
-            pass
+            spilib.send(self.spi,self.csPin,self.busyPin,SET_TX,bytes)
 
     # page 74
     def setTxPower(self,value: int,level: int):
@@ -109,12 +118,13 @@ class DRF1268T():
         bytes = [0x00,0x03,0x00,0x01] if value == 0 else [0x04,0x07,0x00,0x01] 
         spilib.send(self.spi,self.csPin,self.busyPin,SET_PA_CONFIG,bytes) 
 
+        # 0x16 + 0xD9 = 0xEF
         power = 0x16 + level # lowest value that both power levels have
         bytes = [power,0x01]
         spilib.send(self.spi,self.csPin,self.busyPin,SET_TX_PARAMS,bytes)
     
     # page 82
-    def setRf(self,value: int):
+    def setRf(self,frequency: int):
         """
         Sets the radio frequency. 
         
@@ -123,14 +133,16 @@ class DRF1268T():
         value : frequency in kiloHertz
         """
         # scaling input to LSB
-        rf = int(((2 ** 25) / FXTAL) * (value*1000))
-        # moving along, trimming beyond 8 bits                            
-        bytes = [((rf >> (8 * (3-i))) & 0xFF) for i in range(4)]
+        rf = int(((2 ** 25) * (frequency*1000)) / FXTAL)
+        # converting to four bytes
+        bytes = []
+        for i in range(4):                          
+            bytes.append((rf >> (8 * (3-i))) & 0xFF) # shifting along, keeping last 8 bits
         
         spilib.send(self.spi,self.csPin,self.busyPin,SET_RF,bytes)
 
     # page 82
-    def setType(self,value: int):
+    def setPacketType(self,value: int):
         """
         Sets the packet type of the radio.
         
@@ -143,6 +155,34 @@ class DRF1268T():
 
         spilib.send(self.spi,self.csPin,self.busyPin,SET_PACKET_TYPE,[value])
 
-    
+    def setSyncWord(self,value: int=0x4151554953):
+        """
+        Sets the sync word before the preamble. Will only receive
+        if messages start with that sync word.
+        
+        Parameters
+        ----
+        value : maximum of 8 byte sync word (default Ascii of "AQUIS")
+        """
+        bytes = []
+        for i in range(8):     
+            next = (value >> (8 * (7-i))) & 0xFF # shifting along, keeping last 8 bits             
+            if next != 0:
+                bytes.append(next) 
+        spilib.send(self.spi,self.csPin,self.busyPin,SYNC_L,bytes)
 
+    # page 87
+    def setPacketParams(self):
+        """
+        Sets the packet parameters for TX and RX.
+        Required before writing to the buffer.
+        
+        Parameters
+        -----
+        
+        payloadLength : length of payload to transmit / max length to receive. 0 to 255
+        packetType : 0 fixed size, 1 variable size
+        syncWordLength : length of sync word in bytes (default 5)
+        preambleLength : length of preamble in bytes (default 4)"""
+        pass
 
