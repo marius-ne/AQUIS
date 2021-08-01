@@ -2,7 +2,7 @@
 
 Preamble:
 
-The preamble should be shorter than the sync word (p.42). It should be at least 16 bits (p.43).
+The preamble detector length should be shorter than the sync word (p.42). It should be at least 16 bits (p.43).
 The preamble detector length is recommended to be 8 or 16 bits (p.43).
 It seems like sending a longer preamble than the detector length is not a problem.
 

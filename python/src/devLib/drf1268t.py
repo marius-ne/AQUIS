@@ -26,6 +26,7 @@ SET_RF = 0x86
 SET_PACKET_TYPE = 0x8A
 SET_PA_CONFIG = 0x95
 SET_TX_PARAMS = 0x8E
+SET_PACKET_PARAMS = 0x8C
 
 # datasheet: https://datasheet.lcsc.com/szlcsc/2004230932_SEMTECH-SX1268IMLTRT_C244368.pdf
 class DRF1268T():
@@ -155,6 +156,7 @@ class DRF1268T():
 
         spilib.send(self.spi,self.csPin,self.busyPin,SET_PACKET_TYPE,[value])
 
+    # page 88
     def setSyncWord(self,value: int=0x4151554953):
         """
         Sets the sync word before the preamble. Will only receive
@@ -164,15 +166,18 @@ class DRF1268T():
         ----
         value : maximum of 8 byte sync word (default Ascii of "AQUIS")
         """
-        bytes = []
+        bytes = [SYNC_L>>8,SYNC_L&0xFF]
         for i in range(8):     
             next = (value >> (8 * (7-i))) & 0xFF # shifting along, keeping last 8 bits             
             if next != 0:
                 bytes.append(next) 
-        spilib.send(self.spi,self.csPin,self.busyPin,SYNC_L,bytes)
+        #spilib.send(self.spi,self.csPin,self.busyPin,SYNC_L,bytes)
+        """WRITE REGISTER COMMAND"""
+        spilib.send(self.spi,self.csPin,self.busyPin,WRITE_REG,bytes)
 
     # page 87
-    def setPacketParams(self):
+    def setPacketParams(self, payloadLen: int, packetType: int, crcType: int,
+                        syncWordLen: int = 40, preambleLen : int = 64, preambleDetectorLen: int = 16):
         """
         Sets the packet parameters for TX and RX.
         Required before writing to the buffer.
@@ -180,9 +185,12 @@ class DRF1268T():
         Parameters
         -----
         
-        payloadLength : length of payload to transmit / max length to receive. 0 to 255
+        payloadLen : length of payload to transmit / max length to receive. 0 to 255
         packetType : 0 fixed size, 1 variable size
-        syncWordLength : length of sync word in bytes (default 5)
-        preambleLength : length of preamble in bytes (default 4)"""
-        pass
+        crcType : 0 off, 1 for 2 byte CRC
+        syncWordLen : length of sync word in bits (default 40)
+        preambleLen : length of preamble in bits (default 64)
+        preambleDetectorLen : how many preamble bits have to be detected (default 16)"""
+        bytes = [0,preambleLen,preambleDetectorLen,syncWordLen,0,packetType,payloadLen,crcType,0]
+        spilib.send(self.spi,self.csPin,self.busyPin,SET_PACKET_PARAMS,bytes)
 
