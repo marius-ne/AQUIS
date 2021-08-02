@@ -1,0 +1,6 @@
+The microcontroller will need a bootloader before programs can be loaded.
+
+We will need:
+-the binary arduino bootloader
+-usb / swd programmer 
+-microchip studio (atmel studio)
